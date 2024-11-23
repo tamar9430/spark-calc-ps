@@ -24,23 +24,23 @@ def calculate():
     num_devs = int(request.form['num_devs'])
     on_prem_cost_per_dev = float(request.form['on_prem_cost_per_dev'])
     annual_maint_costs = float(request.form['annual_maint_costs'])
-    hours_per_day = float(request.form['hours_per_day'])
-    days_per_year = int(request.form['days_per_year'])
-
-    # Check if the SmartCompute checkbox is checked
-    use_smart_compute = request.form.get('use_smart_compute') == 'on'
+    usage_hours_per_year = int(request.form['usage_hours_per_year'])
 
     # Selected machine cost from the dropdown
     spark_prostation = request.form['spark_prostation']
     machine_cost_per_hour = machine_options[spark_prostation]
 
-    # Apply SmartCompute discount if applicable
-    if use_smart_compute:
-        machine_cost_per_hour *= 0.35
+    # Check selected OS type
+    os_type = request.form['os_type']
+    if os_type == "linux":
+        machine_cost_per_hour *= 0.75  # Apply 25% discount for Rocky Linux
+
+    # Apply additional discount for high usage
+    if usage_hours_per_year > 1000:
+        machine_cost_per_hour *= 0.7  # Apply 30% discount
 
     # Cloud cost calculations
-    total_hours = hours_per_day * days_per_year
-    cloud_cost_per_dev = machine_cost_per_hour * total_hours
+    cloud_cost_per_dev = machine_cost_per_hour * usage_hours_per_year
     total_cloud_cost = cloud_cost_per_dev * num_devs
 
     # On-prem cost calculations
