@@ -4,12 +4,21 @@ app = Flask(__name__)
 
 # Hardcoded machine cost options for the dropdown
 machine_options = {
-    "Starter Kit | 4 Cores | 16GB RAM | NVIDIA T4 16 GB VRAM": 0.99,
-    "Mid-tier | 8 Cores | 32GB RAM | NVIDIA T4 16 GB VRAM": 1.99,
-    "High-end | 16 Cores | 64GB RAM | NVIDIA T4 16 GB VRAM": 2.99,
-    "Top-tier | 32 Cores | 128GB RAM | NVIDIA T4 16 GB VRAM": 4.99,
-    "Exceptional | 48 Cores| 192GB RAM | 4 x NVIDIA T4 16 GB VRAM": 9.99,
-    "Insanity | 192 Cores | 768 GB RAM  | 8 x NVIDIA A10 25 GB VRAM": 39.99,
+    "Starter Kit 1 | 4 Cores | 16GB RAM | NVIDIA T4 16 GB VRAM": 0.99,
+    "Starter Kit 2 | 4 Cores | 16GB RAM | NVIDIA A10 24 GB VRAM": 1.65,
+    "Mid-tier 1 | 8 Cores | 32GB RAM | NVIDIA T4 16 GB VRAM": 1.99,
+    "Mid-tier 2 | 8 Cores | 32GB RAM | NVIDIA A10 24 GB VRAM": 2.29,
+    "High-end Studio 1 | 16 Cores | 64GB RAM | NVIDIA T4 16 GB VRAM": 2.99,
+    "High-end Studio 2 | 16 Cores | 64GB RAM | NVIDIA A10 24 GB VRAM": 3.49,
+    "Top-tier 1 | 32 Cores | 128GB RAM | NVIDIA T4 16 GB VRAM": 4.99,
+    "Top-tier 2 | 64 Cores | 256GB RAM | NVIDIA T4 16 GB VRAM": 7.49,
+    "Top-tier 3 | 32 Cores | 128GB RAM | NVIDIA A10 24 GB VRAM": 7.99,
+    "Exceptional Power 1 | 48 Cores | 192GB RAM | 4 x NVIDIA T4 16 GB VRAM": 8.99,
+    "Exceptional Power 3 | 64 Cores | 256GB RAM | NVIDIA A10 24 GB VRAM": 9.99,
+    "Exceptional Power 2 | 96 Cores | 384GB RAM | 8 x NVIDIA T4 16 GB VRAM": 13.99,
+    "Exceptional Power 4 | 48 Cores | 192GB RAM | 4 x NVIDIA A10 24 GB VRAM": 11.99,
+    "Exceptional Power 5 | 96 Cores | 384GB RAM | 4 x NVIDIA A10 24 GB VRAM": 18.99,
+    "Insanity | 192 Cores | 768GB RAM | 8 x NVIDIA A10 24 GB VRAM": 39.99
 }
 
 @app.route('/')
