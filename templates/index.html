@@ -69,6 +69,9 @@
             background-color: #444444;
             color: white;
         }
+        .form-group:nth-of-type(7) {
+            margin-top: 20px; /* Add gap above Operating System */
+        }
 
         .results {
             max-width: 600px;
@@ -97,13 +100,10 @@
             color: #edff79; /* Green for the discount label */
         }
 
-
         .accent {
             accent-color: #af69f5;
         }
         
-
-
         @media (max-width: 600px) {
             form label,
             form input,
@@ -130,7 +130,7 @@
 
         <!-- On-Prem Machine Cost/user -->
         <div class="form-group">
-            <label for="on_prem_cost_per_dev">On-Prem Machine Cost/user</label>
+            <label for="on_prem_cost_per_dev">On-Prem Workstation Cost/user</label>
             <span id="on_prem_cost_per_dev_value">$6500</span>
             <input type="range" id="on_prem_cost_per_dev" name="on_prem_cost_per_dev" class="accent" min="2000" max="12000" step="100" value="6500">
         </div>
@@ -142,19 +142,32 @@
             <input type="range" id="annual_maint_costs" name="annual_maint_costs" class="accent" min="0" max="30000" step="100" value="7500">
         </div>
 
-        <!-- Combined Slider for Usage Hours/year -->
+        <!-- Work Hours/day Slider -->
+        <div class="form-group">
+            <label for="hours_per_day">Work Hours/day</label>
+            <span id="hours_per_day_value">8</span>
+            <input type="range" id="hours_per_day" name="hours_per_day" class="accent" min="1" max="16" value="8">
+        </div>
+
+        <!-- Work Days/year Slider -->
+        <div class="form-group">
+            <label for="days_per_year">Work Days/year</label>
+            <span id="days_per_year_value">260</span>
+            <input type="range" id="days_per_year" name="days_per_year" class="accent" min="1" max="365" value="260">
+        </div>
+
+        <!-- Usage Hours/year (calculated) -->
         <div class="form-group">
             <label for="usage_hours_per_year">
                 Usage Hours/year <span id="discount-label-hours" class="discount-label"></span>
             </label>
             <span id="usage_hours_per_year_value">2000</span>
-            <input type="range" id="usage_hours_per_year" name="usage_hours_per_year" class="accent" min="500" max="5000" step="10" value="2000">
         </div>
 
         <!-- New Dropdown for OS Type -->
         <div class="form-group">
             <label for="os_type">
-                Operating System <span id="discount-label-os" class="discount-label"></span>
+                Operating System
             </label>
             <select id="os_type" name="os_type">
                 <option value="windows">Windows</option>
@@ -183,77 +196,57 @@
         const formatCurrency = (amount) => Number(amount).toLocaleString(undefined, { minimumFractionDigits: 2 });
 
         const calculateAndUpdate = () => {
-            // Serialize form data
-            const formData = $('#calculator-form').serialize();
+            const hoursPerDay = parseInt($('#hours_per_day').val());
+            const daysPerYear = parseInt($('#days_per_year').val());
+            const usageHours = hoursPerDay * daysPerYear;
 
-            // Send data to the server
+            // Update Usage Hours/year
+            $('#usage_hours_per_year_value').text(usageHours);
+
+            // Add 30% discount label for Usage Hours > 1000
+            if (usageHours > 1000) {
+                $('#discount-label-hours').text('[30% discount]');
+            } else {
+                $('#discount-label-hours').text('');
+            }
+
+            // Serialize form data including calculated usage hours
+            const formData = $('#calculator-form').serialize() + `&usage_hours_per_year=${usageHours}`;
+
+            // Send data to the backend
             $.ajax({
                 type: 'POST',
                 url: '/calculate',
                 data: formData,
                 success: (response) => {
-                    let cloudCost = response.cloud_cost;
-                    $('#cloud_cost').text(formatCurrency(cloudCost));
+                    $('#cloud_cost').text(formatCurrency(response.cloud_cost));
                     $('#on_prem_cost').text(formatCurrency(response.on_prem_cost));
                 }
             });
         };
 
-        const updateDiscountLabels = () => {
-            const usageHours = parseInt($('#usage_hours_per_year').val());
-            const osType = $('#os_type').val();
-
-            // Handle [30% discount] for Usage Hours/year
-            if (usageHours > 1000) {
-                $('#discount-label-hours').text('[30% discount]').show();
-            } else {
-                $('#discount-label-hours').text('').hide();
-            }
-
-            // Handle [25% discount] for Rocky Linux
-            if (osType === 'linux') {
-                $('#discount-label-os').text('[25% discount]').show();
-            } else {
-                $('#discount-label-os').text('').hide();
-            }
-        };
-
         const updateSliderValue = (sliderId, displayId) => {
             $(`#${sliderId}`).on('input', function () {
                 const value = $(this).val();
-
                 if (sliderId === 'on_prem_cost_per_dev' || sliderId === 'annual_maint_costs') {
                     $(`#${displayId}`).text(`$${value}`);
                 } else {
                     $(`#${displayId}`).text(value);
                 }
-
-                // Update discount labels on slider change
-                updateDiscountLabels();
+                calculateAndUpdate();
             });
         };
 
         $(document).ready(() => {
-            // Initialize default calculation
-            calculateAndUpdate();
+            calculateAndUpdate(); // Initialize calculations
 
-            // Ensure discount labels are shown on page load
-            updateDiscountLabels();
-
-            // Update slider values dynamically
             updateSliderValue('num_devs', 'num_devs_value');
             updateSliderValue('on_prem_cost_per_dev', 'on_prem_cost_per_dev_value');
             updateSliderValue('annual_maint_costs', 'annual_maint_costs_value');
-            updateSliderValue('usage_hours_per_year', 'usage_hours_per_year_value'); // New slider
+            updateSliderValue('hours_per_day', 'hours_per_day_value');
+            updateSliderValue('days_per_year', 'days_per_year_value');
 
-            // Update discount labels and calculations on dropdown changes
-            $('#os_type, #spark_prostation').on('change', () => {
-                updateDiscountLabels();
-                calculateAndUpdate();
-            });
-
-            // Trigger recalculations on slider changes
-            $('input[type="range"]').on('input', calculateAndUpdate);
+            $('#os_type, #spark_prostation').on('change', calculateAndUpdate);
         });
     </script>
 </body>
